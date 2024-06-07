@@ -524,7 +524,7 @@ console.log("conversationHis",conversationHis)
       }
       const intervalId = setInterval(() => {
         getAgentChats(Id);
-      }, 40000)
+      }, 5000)
       return () => clearInterval(intervalId)
     }, [])
   const toggleFormVisibility = () => {
