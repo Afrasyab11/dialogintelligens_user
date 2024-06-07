@@ -499,7 +499,7 @@ const App = () => {
         const data = await response.json();
         if(data?.details && data?.details.length>0){
           setIsFormVisible(false)
-          // setFormSubmited(false)
+          setFormSubmited(false)
           setDisabledTextField(false)
           // resetChat();
           setConversation((prevHis) => 
