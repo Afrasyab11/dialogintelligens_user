@@ -333,7 +333,7 @@ console.log("conversationHis",conversationHis)
 
     try {
       const response = await fetch(
-        `${`http://192.168.18.42:11000`}/lead/add-lead-data`,
+        `${`https://backend-dashboard-cw1u.onrender.com`}/lead/add-lead-data`,
         {
           method: "POST",
           headers: {
@@ -353,7 +353,7 @@ console.log("conversationHis",conversationHis)
       setFormSubmited(true)
       setDisabledTextField(true)
       setIsFormVisible(false)
-      resetChat();
+      // resetChat();
       console.log("response", data);
       return data;
     } catch (error) {
@@ -447,7 +447,7 @@ console.log("conversationHis",conversationHis)
       try {
         console.log("form data",formData);
         const response = await fetch(
-          `${`http://192.168.18.42:11000`}/chat/chat`,
+          `${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`,
           {
             method: "POST",
             body: formData,
@@ -483,7 +483,7 @@ console.log("conversationHis",conversationHis)
     const getAgentChats = async (userId) => {
       try {
         const response = await fetch(
-          `${`http://192.168.18.42:11000`}/lead/get-chat-by-user-id?user_id=${userId}`,
+          `${`https://backend-dashboard-cw1u.onrender.com`}/lead/get-chat-by-user-id?user_id=${userId}`,
           {
             method: "GET",
             // headers: {
@@ -502,7 +502,7 @@ console.log("conversationHis",conversationHis)
           setIsFormVisible(false)
           setFormSubmited(false)
           setDisabledTextField(false)
-          resetChat();
+          // resetChat();
           setConversation((prevHis) => 
             data?.details.map(msg => ({
               message: msg.Message,
