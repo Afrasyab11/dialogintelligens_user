@@ -321,7 +321,6 @@ const App = () => {
   const [email, setEmail] = useState("");
   const[disabledTextField,setDisabledTextField]=useState(false)
   const [userId,setUserId]=useState("")
-console.log("conversationHis",conversationHis)
   // chat
   const handleSubmit = async () => {
     setIsFormVisible(false);
@@ -500,7 +499,7 @@ console.log("conversationHis",conversationHis)
         const data = await response.json();
         if(data?.details && data?.details.length>0){
           setIsFormVisible(false)
-          setFormSubmited(false)
+          // setFormSubmited(false)
           setDisabledTextField(false)
           // resetChat();
           setConversation((prevHis) => 
