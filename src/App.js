@@ -222,7 +222,8 @@ const MessageLogo = styled.img`
 const MessageContainer = styled.div`
   display: flex;
   align-items: flex-start; // Aligns the image and text at the top
-  justify-content: ${({ $isUser }) => ($isUser ==="User" ? "flex-end" : "flex-start")};
+  justify-content: ${({ $isUser }) =>
+    $isUser === "User" ? "flex-end" : "flex-start"};
   margin: 0.32em 0.64em; // Spacing around each message
 `;
 
@@ -235,15 +236,16 @@ const Message = styled.div`
   border-radius: 0.64em;
   background-color: ${({ $isUser, themeColor }) =>
     $isUser ? themeColor : "#e9ecef"};
-  color: ${({ $isUser }) => ($isUser ==="Agent"? "black" : "white")};
-  align-self: ${({ $isUser }) => ($isUser ==="User"? "flex-end" : "flex-start")};
+  color: ${({ $isUser }) => ($isUser === "Agent" ? "black" : "white")};
+  align-self: ${({ $isUser }) =>
+    $isUser === "User" ? "flex-end" : "flex-start"};
   max-width: 75%;
   width: fit-content;
   word-break: break-word; // This will break long words to prevent overflow
   margin-left: ${({ $isUser }) =>
-    $isUser ==="User" ? "auto" : "0.64em"}; /* Auto margin for user messages */
+    $isUser === "User" ? "auto" : "0.64em"}; /* Auto margin for user messages */
   margin-right: ${({ $isUser }) =>
-    $isUser ==="User" ? "0.64em" : "auto"}; /* Auto margin for AI messages */
+    $isUser === "User" ? "0.64em" : "auto"}; /* Auto margin for AI messages */
 `;
 
 const InputContainer = styled.div`
@@ -316,11 +318,12 @@ const App = () => {
   const [msgIndex, setMsgIndex] = useState(0);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isFormSubmitted, setFormSubmited] = useState(false);
+  const [talkButton, setTalkButton] = useState(true);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const[disabledTextField,setDisabledTextField]=useState(false)
-  const [userId,setUserId]=useState("")
+  const [disabledTextField, setDisabledTextField] = useState(false);
+  const [userId, setUserId] = useState("");
   // chat
   const handleSubmit = async () => {
     setIsFormVisible(false);
@@ -347,11 +350,11 @@ const App = () => {
       }
 
       const data = await response.json();
-      setUserId(data?.details?.user_id)
+      setUserId(data?.details?.user_id);
       // localStorage.setItem("userDetails", data?.details?.user_id);
-      setFormSubmited(true)
-      setDisabledTextField(true)
-      setIsFormVisible(false)
+      setFormSubmited(true);
+      setDisabledTextField(true);
+      setIsFormVisible(false);
       // resetChat();
       console.log("response", data);
       return data;
@@ -365,13 +368,13 @@ const App = () => {
   const sendMessage = async () => {
     // let userId = localStorage.getItem("userDetails")
     // console.log("userId", userId);
-    let formData = new FormData()
+    let formData = new FormData();
 
-    formData.append("message", message)
-    formData.append("user_id", userId)
-    formData.append("type", "user")
-  
-    console.log("formate",formData)
+    formData.append("message", message);
+    formData.append("user_id", userId);
+    formData.append("type", "user");
+
+    console.log("formate", formData);
     // setMsgIndex(msgIndex + 1);
     // Start loading state
     setIsLoading(true);
@@ -444,7 +447,7 @@ const App = () => {
       }
     } else {
       try {
-        console.log("form data",formData);
+        console.log("form data", formData);
         const response = await fetch(
           `${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`,
           {
@@ -454,17 +457,17 @@ const App = () => {
         );
 
         if (!response.ok) {
-          console.log("error in response")
+          console.log("error in response");
           // throw new Error("server error");
         }
 
         const data = await response.json();
-       
-        if(data){
-          getAgentChats(userId)
+
+        if (data) {
+          getAgentChats(userId);
         }
-        if (data?.details){
-          alert(data.details)
+        if (data?.details) {
+          alert(data.details);
         }
         // alert(data.details)
         // setMessage(data?.details)
@@ -476,65 +479,64 @@ const App = () => {
     }
   };
 
+  // actions.js or api.js
+  const getAgentChats = async (userId) => {
+    try {
+      const response = await fetch(
+        `${`https://backend-dashboard-cw1u.onrender.com`}/lead/get-chat-by-user-id?user_id=${userId}`,
+        {
+          method: "GET",
+          // headers: {
+          //   "Content-Type": "application/json",
+          // },
+        }
+      );
 
- 
-    // actions.js or api.js
-    const getAgentChats = async (userId) => {
-      try {
-        const response = await fetch(
-          `${`https://backend-dashboard-cw1u.onrender.com`}/lead/get-chat-by-user-id?user_id=${userId}`,
-          {
-            method: "GET",
-            // headers: {
-            //   "Content-Type": "application/json",
-            // },
-          }
-        );
-  
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-  
-        // console.log("response7979",response)
-        const data = await response.json();
-        if(data?.details && data?.details.length>0){
-          setIsFormVisible(false)
-          setFormSubmited(false)
-          setDisabledTextField(false)
-          // resetChat();
-          setConversation((prevHis) => 
-            data?.details.map(msg => ({
-              message: msg.Message,
-              type: msg.type,
-            })),
-          );
-          setIsLoading(false);
-        }
-        console.log("data000",data)
-        // console.log("aaaaa",data);
-        return data;
-      } catch (error) {
-        console.error("There was a problem with the fetch operation:", error);
-        throw error;
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
-    };
- 
-    useEffect(() => {
+
+      // console.log("response7979",response)
+      const data = await response.json();
+      if (data?.details && data?.details.length > 0) {
+        setIsFormVisible(false);
+        setFormSubmited(false);
+        setDisabledTextField(false);
+        setTalkButton(false)
+        // resetChat();
+        setConversation((prevHis) =>
+          data?.details.map((msg) => ({
+            message: msg.Message,
+            type: msg.type,
+          }))
+        );
+        setIsLoading(false);
+      }
+      console.log("data000", data);
+      // console.log("aaaaa",data);
+      return data;
+    } catch (error) {
+      console.error("There was a problem with the fetch operation:", error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      let resp = getAgentChats(userId);
+      console.log("Initial API call:", resp);
+    }
+
+    const intervalId = setInterval(() => {
       if (userId) {
         let resp = getAgentChats(userId);
-        console.log("Initial API call:", resp);
+        console.log("Interval API call:", resp);
       }
-      
-      const intervalId = setInterval(() => {
-        if (userId) {
-          let resp = getAgentChats(userId);
-          console.log("Interval API call:", resp);
-        }
-      }, 5000);
-    
-      return () => clearInterval(intervalId);
-    }, [userId]);
-    
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [userId]);
+
   const toggleFormVisibility = () => {
     setIsFormVisible(!isFormVisible);
   };
@@ -598,8 +600,6 @@ const App = () => {
     };
   }, [SOCKET_SERVER_URL]);
 
- 
-
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -657,10 +657,11 @@ const App = () => {
             alt="Toggle Size"
             onClick={toggleSize}
           />
-
-          <TalkToHuman onClick={toggleFormVisibility}>
-            Talk to Human
-          </TalkToHuman>
+          {talkButton && (
+            <TalkToHuman onClick={toggleFormVisibility}>
+              Talk to Human
+            </TalkToHuman>
+          )}
         </TitleBar>
         <div style={{ flexGrow: 1, overflow: "auto" }}>
           <Header>
@@ -672,11 +673,13 @@ const App = () => {
             </HeaderSubtitle>
           </Header>
           {conversation.map((entry, index) => {
-            const formattedText = entry?.message !==null && entry?.message
-              // Convert line breaks followed by "- " to bullet points
-              .replace(/\n- /g, "\n\u2022 ")
-              // Convert text surrounded by "**" to bold
-              .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            const formattedText =
+              entry?.message !== null &&
+              entry?.message
+                // Convert line breaks followed by "- " to bullet points
+                .replace(/\n- /g, "\n\u2022 ")
+                // Convert text surrounded by "**" to bold
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
             return (
               <>
@@ -685,7 +688,10 @@ const App = () => {
                     <MessageLogo src={headerLogoG || DIlogo} alt="AI Logo" />
                   )}
                   <Message
-                  style={{ backgroundColor: entry.type === "Agent" ? "#dce3de" : "#5083e3" }}
+                    style={{
+                      backgroundColor:
+                        entry.type === "Agent" ? "#dce3de" : "#5083e3",
+                    }}
                     $isUser={entry?.type}
                     // themeColor={entry.type==="Agent" ?"#0000": "#5083e3"}
                   >
@@ -824,9 +830,9 @@ const App = () => {
                 <div></div>
               </LoadingIndicator>
             </TypingIndicator>
-          )} 
+          )}
           <div ref={messagesEndRef} />{" "}
-           {/* Invisible element to scroll into view */}
+          {/* Invisible element to scroll into view */}
         </div>
         {isFormSubmitted && (
           <div className="d-flex flex-row justify-content-center align-items-center">
