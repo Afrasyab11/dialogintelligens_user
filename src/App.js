@@ -235,7 +235,7 @@ const Message = styled.div`
   border-radius: 0.64em;
   background-color: ${({ $isUser, themeColor }) =>
     $isUser ? themeColor : "#e9ecef"};
-  color: ${({ $isUser }) => ($isUser ==="Agent"? "white" : "black")};
+  color: ${({ $isUser }) => ($isUser ==="Agent"? "black" : "white")};
   align-self: ${({ $isUser }) => ($isUser ==="User"? "flex-end" : "flex-start")};
   max-width: 75%;
   width: fit-content;
@@ -320,6 +320,7 @@ const App = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const[disabledTextField,setDisabledTextField]=useState(false)
+  const [userId,setUserId]=useState("")
 console.log("conversationHis",conversationHis)
   // chat
   const handleSubmit = async () => {
@@ -332,7 +333,7 @@ console.log("conversationHis",conversationHis)
 
     try {
       const response = await fetch(
-        `${`https://backend-dashboard-cw1u.onrender.com`}/lead/add-lead-data`,
+        `${`http://192.168.18.42:11000`}/lead/add-lead-data`,
         {
           method: "POST",
           headers: {
@@ -347,7 +348,8 @@ console.log("conversationHis",conversationHis)
       }
 
       const data = await response.json();
-      localStorage.setItem("userDetails", data?.details?.user_id);
+      setUserId(data?.details?.user_id)
+      // localStorage.setItem("userDetails", data?.details?.user_id);
       setFormSubmited(true)
       setDisabledTextField(true)
       setIsFormVisible(false)
@@ -362,8 +364,8 @@ console.log("conversationHis",conversationHis)
 
   // send chat
   const sendMessage = async () => {
-    let userId = localStorage.getItem("userDetails")
-    console.log("userId", userId);
+    // let userId = localStorage.getItem("userDetails")
+    // console.log("userId", userId);
     let formData = new FormData()
 
     formData.append("message", message)
@@ -445,7 +447,7 @@ console.log("conversationHis",conversationHis)
       try {
         console.log("form data",formData);
         const response = await fetch(
-          `${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`,
+          `${`http://192.168.18.42:11000`}/chat/chat`,
           {
             method: "POST",
             body: formData,
@@ -481,7 +483,7 @@ console.log("conversationHis",conversationHis)
     const getAgentChats = async (userId) => {
       try {
         const response = await fetch(
-          `${`https://backend-dashboard-cw1u.onrender.com`}/lead/get-chat-by-user-id?user_id=${userId}`,
+          `${`http://192.168.18.42:11000`}/lead/get-chat-by-user-id?user_id=${userId}`,
           {
             method: "GET",
             // headers: {
@@ -517,16 +519,23 @@ console.log("conversationHis",conversationHis)
         throw error;
       }
     };
+ 
     useEffect(() => {
-      let Id = localStorage.getItem("userDetails");
-      if (Id) {
-        getAgentChats(Id);
+      if (userId) {
+        let resp = getAgentChats(userId);
+        console.log("Initial API call:", resp);
       }
+      
       const intervalId = setInterval(() => {
-        getAgentChats(Id);
-      }, 5000)
-      return () => clearInterval(intervalId)
-    }, [])
+        if (userId) {
+          let resp = getAgentChats(userId);
+          console.log("Interval API call:", resp);
+        }
+      }, 5000);
+    
+      return () => clearInterval(intervalId);
+    }, [userId]);
+    
   const toggleFormVisibility = () => {
     setIsFormVisible(!isFormVisible);
   };
@@ -664,7 +673,6 @@ console.log("conversationHis",conversationHis)
             </HeaderSubtitle>
           </Header>
           {conversation.map((entry, index) => {
-            console.log("helsldfsdfsdf",entry)
             const formattedText = entry?.message !==null && entry?.message
               // Convert line breaks followed by "- " to bullet points
               .replace(/\n- /g, "\n\u2022 ")
@@ -678,8 +686,9 @@ console.log("conversationHis",conversationHis)
                     <MessageLogo src={headerLogoG || DIlogo} alt="AI Logo" />
                   )}
                   <Message
+                  style={{ backgroundColor: entry.type === "Agent" ? "#dce3de" : "#5083e3" }}
                     $isUser={entry?.type}
-                    themeColor={themeColor || "#5083e3"}
+                    // themeColor={entry.type==="Agent" ?"#0000": "#5083e3"}
                   >
                     <div>{parse(formattedText)}</div>
                   </Message>
