@@ -287,15 +287,31 @@ const ChatInput = styled.input`
     color: #a9a9a9; /* Placeholder text color */
   }
 `;
+const currentDate = new Date();
+const year = currentDate.getFullYear();
+const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+const day = String(currentDate.getDate()).padStart(2, "0");
+const hours = currentDate.getHours();
+const minutes = String(currentDate.getMinutes()).padStart(2, "0");
+const seconds = String(currentDate.getSeconds()).padStart(2, "0");
+const ampm = hours >= 12 ? "PM" : "AM";
+const formattedHours = hours % 12 || 12; // Convert to 12-hour format
 
+// Format the date and time string
+const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 const App = () => {
   const [conversation, setConversation] = useState([
-    { message: "Hej, hvad kan jeg hjælpe dig med?", type: "Agent" },
+    {
+      message: "Hej, hvad kan jeg hjælpe dig med?",
+      type: "Agent",
+      Datetime: formattedDateTime,
+    },
   ]);
   const [conversationHis, setConversationHis] = useState([
     {
       message: "Hej, hvad kan jeg hjælpe dig med?",
       type: "Agent",
+      Datetime: formattedDateTime,
     },
   ]);
   const [message, setMessage] = useState("");
@@ -324,6 +340,7 @@ const App = () => {
   const [email, setEmail] = useState("");
   const [disabledTextField, setDisabledTextField] = useState(false);
   const [userId, setUserId] = useState("");
+  console.log("conversation", conversationHis);
   // chat
   const handleSubmit = async () => {
     setIsFormVisible(false);
@@ -366,14 +383,13 @@ const App = () => {
 
   // send chat
   const sendMessage = async () => {
-    // let userId = localStorage.getItem("userDetails")
-    // console.log("userId", userId);
     let formData = new FormData();
+    // const formattedDateTime = new Date().toISOString();
 
     formData.append("message", message);
     formData.append("user_id", userId);
     formData.append("type", "user");
-
+    formData.append("chat_list", JSON.stringify(conversationHis));
     console.log("formate", formData);
     // setMsgIndex(msgIndex + 1);
     // Start loading state
@@ -396,13 +412,14 @@ const App = () => {
       {
         message: message,
         type: "User",
+        Datetime: formattedDateTime,
       },
     ]);
 
     // Add the message to the conversation
     setConversation((prevConv) => [
       ...prevConv,
-      { message: message, type: "User" },
+      { message: message, type: "User", Datetime: formattedDateTime },
     ]);
 
     setMessage(""); // Clear the input after sending
@@ -435,6 +452,7 @@ const App = () => {
             {
               message: apiResponseMessage,
               type: "Agent",
+              Datetime: formattedDateTime,
             },
           ]);
         } else {
@@ -447,7 +465,10 @@ const App = () => {
       }
     } else {
       try {
-        console.log("form data", formData);
+        // setConversation((prevConv) => [
+        //   ...prevConv,
+        //   { message: message, type: "User" },
+        // ]);
         const response = await fetch(
           `${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`,
           {
@@ -502,11 +523,12 @@ const App = () => {
         setIsFormVisible(false);
         setFormSubmited(false);
         setDisabledTextField(false);
-        setTalkButton(false)
+        setTalkButton(false);
         // resetChat();
         setConversation((prevHis) =>
+          // ...prevHis,
           data?.details.map((msg) => ({
-            message: msg.Message,
+            message: msg.message,
             type: msg.type,
           }))
         );
@@ -617,12 +639,17 @@ const App = () => {
 
     // Reset conversation
     setConversation([
-      { message: "Hej, hvad kan jeg hjælpe dig med?", type: "Agent" },
+      {
+        message: "Hej, hvad kan jeg hjælpe dig med?",
+        type: "Agent",
+        Datetime: formattedDateTime,
+      },
     ]);
     setConversationHis([
       {
         message: "Hej, hvad kan jeg hjælpe dig med?",
         type: "Agent",
+        Datetime: formattedDateTime,
       },
     ]);
 
@@ -672,35 +699,34 @@ const App = () => {
                 "Vores virtuelle assistent er her for at hjælpe dig."}
             </HeaderSubtitle>
           </Header>
-          {conversation.map((entry, index) => {
-            const formattedText =
-              entry?.message !== null &&
-              entry?.message
-                // Convert line breaks followed by "- " to bullet points
-                .replace(/\n- /g, "\n\u2022 ")
-                // Convert text surrounded by "**" to bold
-                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+          {conversation.length > 0 &&
+            conversation?.map((entry, index) => {
+              const formattedText =
+                entry?.message !== undefined &&
+                entry?.message
+                  // Convert line breaks followed by "- " to bullet points
+                  .replace(/\n- /g, "\n\u2022 ")
+                  // Convert text surrounded by "**" to bold
+                  .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
-            return (
-              <>
-                <MessageContainer key={index} $isUser={entry?.type}>
-                  {!entry?.type && (
-                    <MessageLogo src={headerLogoG || DIlogo} alt="AI Logo" />
-                  )}
-                  <Message
-                    style={{
-                      backgroundColor:
-                        entry.type === "Agent" ? "#dce3de" : "#5083e3",
-                    }}
-                    $isUser={entry?.type}
-                    // themeColor={entry.type==="Agent" ?"#0000": "#5083e3"}
-                  >
-                    <div>{parse(formattedText)}</div>
-                  </Message>
-                </MessageContainer>
-              </>
-            );
-          })}
+              return (
+                <>
+                  <MessageContainer key={index} $isUser={entry?.type}>
+                    {entry?.type === "Agent" && <MessageLogo src={DIlogo} />}
+                    <Message
+                      style={{
+                        backgroundColor:
+                          entry.type === "Agent" ? "#dce3de" : "#5083e3",
+                      }}
+                      $isUser={entry?.type}
+                      // themeColor={entry.type==="Agent" ?"#0000": "#5083e3"}
+                    >
+                      <div>{parse(formattedText)}</div>
+                    </Message>
+                  </MessageContainer>
+                </>
+              );
+            })}
           <InputContainer>
             {/* When user click on Talk to human than this form will open. */}
             {isFormVisible && (
