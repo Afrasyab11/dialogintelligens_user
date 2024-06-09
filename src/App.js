@@ -10,6 +10,7 @@ import enlargeIcon from "./enlargeIcon.png";
 import shrinkIcon from "./shrinkIcon.png";
 import { BsArrowLeft } from "react-icons/bs";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { type } from "@testing-library/user-event/dist/type";
 
 const placeholderSOCKET_SERVER_URL = "https://flowise-udvikling.onrender.com";
 const placeholderAPI =
@@ -340,6 +341,8 @@ const App = () => {
   const [email, setEmail] = useState("");
   const [disabledTextField, setDisabledTextField] = useState(false);
   const [userId, setUserId] = useState("");
+  const [getChat, setGetChat] = useState([]);
+  console.log("getChat===>", getChat);
   console.log("conversation", conversationHis);
   // chat
   const handleSubmit = async () => {
@@ -383,14 +386,6 @@ const App = () => {
 
   // send chat
   const sendMessage = async () => {
-    let formData = new FormData();
-    // const formattedDateTime = new Date().toISOString();
-
-    formData.append("message", message);
-    formData.append("user_id", userId);
-    formData.append("type", "user");
-    formData.append("chat_list", JSON.stringify(conversationHis));
-    console.log("formate", formData);
     // setMsgIndex(msgIndex + 1);
     // Start loading state
     setIsLoading(true);
@@ -464,42 +459,46 @@ const App = () => {
         setIsLoading(false); // Stop loading state after the request
       }
     } else {
-      try {
-        // setConversation((prevConv) => [
-        //   ...prevConv,
-        //   { message: message, type: "User" },
-        // ]);
-        const response = await fetch(
-          `${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        if (!response.ok) {
-          console.log("error in response");
-          // throw new Error("server error");
-        }
-
-        const data = await response.json();
-
-        if (data) {
-          getAgentChats(userId);
-        }
-        if (data?.details) {
-          alert(data.details);
-        }
-        // alert(data.details)
-        // setMessage(data?.details)
-        return data;
-      } catch (error) {
-        console.error("There was a problem with the fetch operation:", error);
-        throw error;
-      }
+      let formData = new FormData();
+      formData.append("message", message);
+      formData.append("user_id", userId);
+      formData.append("type", "user");
+      sendChat(formData);
     }
   };
+  // send chat to backend
+  const sendChat = async (formData) => {
+    try {
+      // if(getChat.length ===)
+      const response = await fetch(
+        `${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
+      if (!response.ok) {
+        console.log("error in response");
+        // throw new Error("server error");
+      }
+
+      const data = await response.json();
+
+      if (data) {
+        getAgentChats(userId);
+      }
+      if (data?.details) {
+        alert(data.details);
+      }
+      // alert(data.details)
+      // setMessage(data?.details)
+      return data;
+    } catch (error) {
+      console.error("There was a problem with the fetch operation:", error);
+      throw error;
+    }
+  };
   // actions.js or api.js
   const getAgentChats = async (userId) => {
     try {
@@ -520,11 +519,11 @@ const App = () => {
       // console.log("response7979",response)
       const data = await response.json();
       if (data?.details && data?.details.length > 0) {
+        setGetChat(data?.details);
         setIsFormVisible(false);
         setFormSubmited(false);
         setDisabledTextField(false);
         setTalkButton(false);
-        // resetChat();
         setConversation((prevHis) =>
           // ...prevHis,
           data?.details.map((msg) => ({
@@ -533,6 +532,20 @@ const App = () => {
           }))
         );
         setIsLoading(false);
+        if (data?.details.length === 1) {
+          setConversation((prevHis) =>
+            data?.details.map((msg) => ({
+              message: msg.message,
+              type: msg.type,
+              Datetime: formattedDateTime,
+            }))
+          );
+          let formData = new FormData();
+          formData.append("user_id", userId);
+          formData.append("type", "user");
+          formData.append("chat_list", JSON.stringify(conversationHis));
+          sendChat(formData);
+        }
       }
       console.log("data000", data);
       // console.log("aaaaa",data);
@@ -700,9 +713,9 @@ const App = () => {
             </HeaderSubtitle>
           </Header>
           {conversation.length > 0 &&
-            conversation?.map((entry, index) => {
+            conversation.map((entry, index) => {
               const formattedText =
-                entry?.message !== undefined &&
+                entry?.message !== null &&
                 entry?.message
                   // Convert line breaks followed by "- " to bullet points
                   .replace(/\n- /g, "\n\u2022 ")
@@ -710,21 +723,25 @@ const App = () => {
                   .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
               return (
-                <>
-                  <MessageContainer key={index} $isUser={entry?.type}>
-                    {entry?.type === "Agent" && <MessageLogo src={DIlogo} />}
-                    <Message
-                      style={{
-                        backgroundColor:
-                          entry.type === "Agent" ? "#dce3de" : "#5083e3",
-                      }}
-                      $isUser={entry?.type}
-                      // themeColor={entry.type==="Agent" ?"#0000": "#5083e3"}
-                    >
-                      <div>{parse(formattedText)}</div>
-                    </Message>
-                  </MessageContainer>
-                </>
+                formattedText && ( // Check if formattedText is truthy before rendering
+                  <React.Fragment key={index}>
+                    <MessageContainer $isUser={entry?.type}>
+                      {entry?.type === "Agent" && <MessageLogo src={DIlogo} />}
+                      <Message
+                        style={{
+                          backgroundColor:
+                            entry.type === "Agent" ? "#dce3de" : "#5083e3",
+                        }}
+                        $isUser={entry?.type}
+                        // themeColor={entry.type==="Agent" ?"#0000": "#5083e3"}
+                      >
+                        <div
+                          dangerouslySetInnerHTML={{ __html: formattedText }}
+                        />
+                      </Message>
+                    </MessageContainer>
+                  </React.Fragment>
+                )
               );
             })}
           <InputContainer>
