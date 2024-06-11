@@ -342,8 +342,6 @@ const App = () => {
   const [disabledTextField, setDisabledTextField] = useState(false);
   const [userId, setUserId] = useState("");
   const [getChat, setGetChat] = useState([]);
-  console.log("getChat===>", getChat);
-  console.log("conversation", conversationHis);
   // chat
   const handleSubmit = async () => {
     setIsFormVisible(false);
@@ -371,12 +369,10 @@ const App = () => {
 
       const data = await response.json();
       setUserId(data?.details?.user_id);
-      // localStorage.setItem("userDetails", data?.details?.user_id);
       setFormSubmited(true);
       setDisabledTextField(true);
       setIsFormVisible(false);
       // resetChat();
-      console.log("response", data);
       return data;
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
@@ -441,6 +437,7 @@ const App = () => {
           const jsonResponse = await response.json();
 
           const apiResponseMessage = jsonResponse.text;
+          console.log("apiResponseMessage", apiResponseMessage);
           // Add the API response message to the conversationHis
           setConversationHis((prevHis) => [
             ...prevHis,
@@ -451,10 +448,27 @@ const App = () => {
             },
           ]);
         } else {
+          const jsonResponse = await response.json();
+          const apiResponseMessage = jsonResponse.text;
           console.error(`HTTP error! status: ${response.status}`);
         }
       } catch (error) {
-        console.error("Sending message failed:", error);
+        setConversation((prevConv) => [
+          ...prevConv,
+          {
+            message: "something went wrong",
+            type: "Agent",
+            Datetime: formattedDateTime,
+          },
+        ]);
+        setConversationHis((prevHis) => [
+          ...prevHis,
+          {
+            message: "something went wrong",
+            type: "Agent",
+            Datetime: formattedDateTime,
+          },
+        ]);
       } finally {
         setIsLoading(false); // Stop loading state after the request
       }
@@ -516,7 +530,6 @@ const App = () => {
         throw new Error("Network response was not ok");
       }
 
-      // console.log("response7979",response)
       const data = await response.json();
       if (data?.details && data?.details.length > 0) {
         setGetChat(data?.details);
@@ -547,7 +560,6 @@ const App = () => {
           sendChat(formData);
         }
       }
-      console.log("data000", data);
       // console.log("aaaaa",data);
       return data;
     } catch (error) {
