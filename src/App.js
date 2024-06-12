@@ -461,6 +461,14 @@ const App = () => {
         } else {
           const jsonResponse = await response.json();
           const apiResponseMessage = jsonResponse.text;
+          setConversation((prevConv) => [
+            ...prevConv,
+            {
+              message: "something went wrong",
+              type: "Agent",
+              Datetime: formattedDateTime,
+            },
+          ]);
           console.error(`HTTP error! status: ${response.status}`);
         }
       } catch (error) {
