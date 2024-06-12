@@ -13,8 +13,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { type } from "@testing-library/user-event/dist/type";
 
 const placeholderSOCKET_SERVER_URL = "https://flowise-udvikling.onrender.com";
+// const placeholderAPI =
+//   "https://flowise-udvikling.onrender.com/api/v1/prediction/a3e86073-8eda-401d-90d1-7127fb707f99";
 const placeholderAPI =
-  "https://flowise-udvikling.onrender.com/api/v1/prediction/a3e86073-8eda-401d-90d1-7127fb707f99";
+  "https://den-megtige-maskine.onrender.com/api/v1/prediction/f0243d9a-338a-4adf-82c5-fb037a667a8e";
 
 const TypingIndicator = styled.div`
   display: flex;
@@ -343,6 +345,7 @@ const App = () => {
   const [userId, setUserId] = useState("");
   const [getChat, setGetChat] = useState([]);
   // chat
+  console.log("conversation",conversation)
   const handleSubmit = async () => {
     setIsFormVisible(false);
     // setFormSubmited(true);
@@ -439,6 +442,14 @@ const App = () => {
           const apiResponseMessage = jsonResponse.text;
           console.log("apiResponseMessage", apiResponseMessage);
           // Add the API response message to the conversationHis
+          setConversation((prevConv) => [
+            ...prevConv,
+            {
+              message: apiResponseMessage,
+              type: "Agent",
+              Datetime: formattedDateTime,
+            },
+          ]);
           setConversationHis((prevHis) => [
             ...prevHis,
             {
@@ -556,7 +567,7 @@ const App = () => {
           let formData = new FormData();
           formData.append("user_id", userId);
           formData.append("type", "user");
-          formData.append("chat_list", JSON.stringify(conversationHis));
+          formData.append("chat_list", JSON.stringify(conversation));
           sendChat(formData);
         }
       }
