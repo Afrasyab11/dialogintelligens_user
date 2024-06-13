@@ -344,10 +344,11 @@ const App = () => {
   const [disabledTextField, setDisabledTextField] = useState(false);
   const [userId, setUserId] = useState("");
   const [getChat, setGetChat] = useState([]);
+  const [loading, setLoading] = useState(false);
   // chat
-  console.log("conversation",conversation)
-  const handleSubmit = async () => {
-    setIsFormVisible(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+   await setLoading(true);
     // setFormSubmited(true);
     let payload = {
       name: name,
@@ -367,16 +368,19 @@ const App = () => {
       );
 
       if (!response.ok) {
+       await setLoading(false);
         throw new Error("server error");
+      } else {
+       await setLoading(false);
+        const data = await response.json();
+        setUserId(data?.details?.user_id);
+        setFormSubmited(true);
+        setDisabledTextField(true);
+        // setIsFormVisible(false);
+        setIsFormVisible(false);
+        // resetChat();
+        return data;
       }
-
-      const data = await response.json();
-      setUserId(data?.details?.user_id);
-      setFormSubmited(true);
-      setDisabledTextField(true);
-      setIsFormVisible(false);
-      // resetChat();
-      return data;
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
       throw error;
@@ -461,6 +465,7 @@ const App = () => {
         } else {
           const jsonResponse = await response.json();
           const apiResponseMessage = jsonResponse.text;
+          console.error(`HTTP error! status: ${response.status}`);
           setConversation((prevConv) => [
             ...prevConv,
             {
@@ -469,17 +474,16 @@ const App = () => {
               Datetime: formattedDateTime,
             },
           ]);
-          console.error(`HTTP error! status: ${response.status}`);
         }
       } catch (error) {
-        setConversation((prevConv) => [
-          ...prevConv,
-          {
-            message: "something went wrong",
-            type: "Agent",
-            Datetime: formattedDateTime,
-          },
-        ]);
+        // setConversation((prevConv) => [
+        //   ...prevConv,
+        //   {
+        //     message: "something went wrong",
+        //     type: "Agent",
+        //     Datetime: formattedDateTime,
+        //   },
+        // ]);
         setConversationHis((prevHis) => [
           ...prevHis,
           {
@@ -503,13 +507,10 @@ const App = () => {
   const sendChat = async (formData) => {
     try {
       // if(getChat.length ===)
-      const response = await fetch(
-        `${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
         console.log("error in response");
@@ -521,9 +522,9 @@ const App = () => {
       if (data) {
         getAgentChats(userId);
       }
-      if (data?.details) {
-        alert(data.details);
-      }
+      // if (data?.details) {
+      //   alert(data.details);
+      // }
       // alert(data.details)
       // setMessage(data?.details)
       return data;
@@ -889,7 +890,7 @@ const App = () => {
                       cursor: "pointer",
                     }}
                   >
-                    Submit
+                    {loading ? "Submitting..." : "Submit"}
                   </button>
                 </form>
               </div>
