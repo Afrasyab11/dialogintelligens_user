@@ -557,27 +557,35 @@ const App = () => {
         setFormSubmited(false);
         setDisabledTextField(false);
         setTalkButton(false);
-        setConversation((prevHis) =>
-          // ...prevHis,
-          data?.details.map((msg) => ({
-            message: msg.message,
-            type: msg.type,
-          }))
-        );
+        // setConversation((prevHis) =>
+        //   data?.details.map((msg) => ({
+        //     message: msg.message,
+        //     type: msg.type,
+        //   }))
+        // );
         setIsLoading(false);
         if (data?.details.length === 1) {
-          setConversation((prevHis) =>
+          // setConversation((prevHis) =>
+          //   data?.details.map((msg) => ({
+          //     message: msg.message,
+          //     type: msg.type,
+          //     Datetime: formattedDateTime,
+          //   }))
+          // );
+          let formData = new FormData();
+          formData.append("user_id", userId);
+          formData.append("type", "user");
+          formData.append("chat_list", JSON.stringify(conversation));
+          sendChat(formData);
+        }
+        if(data?.details.length > 1){
+           setConversation((prevHis) =>
             data?.details.map((msg) => ({
               message: msg.message,
               type: msg.type,
               Datetime: formattedDateTime,
             }))
           );
-          let formData = new FormData();
-          formData.append("user_id", userId);
-          formData.append("type", "user");
-          formData.append("chat_list", JSON.stringify(conversation));
-          sendChat(formData);
         }
       }
       // console.log("aaaaa",data);
