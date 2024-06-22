@@ -353,6 +353,7 @@ const App = () => {
     let payload = {
       name: name,
       email: email,
+      admin_id:8,
     };
 
     try {
