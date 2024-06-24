@@ -11,7 +11,9 @@ import shrinkIcon from "./shrinkIcon.png";
 import { BsArrowLeft } from "react-icons/bs";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { type } from "@testing-library/user-event/dist/type";
-import { useParams } from 'react-router-dom';
+import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const placeholderSOCKET_SERVER_URL = "https://flowise-udvikling.onrender.com";
 // const placeholderAPI =
 //   "https://flowise-udvikling.onrender.com/api/v1/prediction/a3e86073-8eda-401d-90d1-7127fb707f99";
@@ -322,7 +324,7 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isEnlarged, setIsEnlarged] = useState(false);
   const { id } = useParams();
-  console.log("Id===>",id)
+  console.log("Id===>", id);
   const socket = useRef(null);
 
   const [apiEndpoint, setApiEndpoint] = useState("");
@@ -347,14 +349,49 @@ const App = () => {
   const [getChat, setGetChat] = useState([]);
   const [loading, setLoading] = useState(false);
   // chat
+  useEffect(() => {
+    let isMounted = true; // flag to avoid setting state if component is unmounted
+
+    const fetchAdminStatus = async () => {
+      if (id !== undefined) {
+        try {
+          const response = await fetch(`https://backend-dashboard-cw1u.onrender.com/lead/check-admin?admin_id=${id}`, {
+            method: 'POST',
+          });
+
+          if (isMounted) { // check if the component is still mounted
+            if (response.ok) {
+              setTalkButton(true);
+              setDisabledTextField(false);
+            } else {
+              toast.warning("Admin doest not exist")
+              setTalkButton(false);
+              setDisabledTextField(true);
+            }
+          }
+        } catch (error) {
+          if (isMounted) { // check if the component is still mounted
+            setTalkButton(false);
+            setDisabledTextField(true);
+          }
+        }
+      }
+    };
+
+    fetchAdminStatus();
+
+    return () => {
+      isMounted = false; // cleanup function to mark the component as unmounted
+    };
+  }, [id]); 
   const handleSubmit = async (e) => {
     e.preventDefault();
-   await setLoading(true);
+    await setLoading(true);
     // setFormSubmited(true);
     let payload = {
       name: name,
       email: email,
-      admin_id:id,
+      admin_id: id,
     };
 
     try {
@@ -370,10 +407,11 @@ const App = () => {
       );
 
       if (!response.ok) {
-       await setLoading(false);
+        await setLoading(false);
+       
         throw new Error("server error");
       } else {
-       await setLoading(false);
+        await setLoading(false);
         const data = await response.json();
         setUserId(data?.details?.user_id);
         setFormSubmited(true);
@@ -509,10 +547,13 @@ const App = () => {
   const sendChat = async (formData) => {
     try {
       // if(getChat.length ===)
-      const response = await fetch(`${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${`https://backend-dashboard-cw1u.onrender.com`}/chat/chat`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         console.log("error in response");
@@ -580,8 +621,8 @@ const App = () => {
           formData.append("chat_list", JSON.stringify(conversation));
           sendChat(formData);
         }
-        if(data?.details.length > 1){
-           setConversation((prevHis) =>
+        if (data?.details.length > 1) {
+          setConversation((prevHis) =>
             data?.details.map((msg) => ({
               message: msg.message,
               type: msg.type,
@@ -601,13 +642,11 @@ const App = () => {
   useEffect(() => {
     if (userId) {
       let resp = getAgentChats(userId);
-      console.log("Initial API call:", resp);
     }
 
     const intervalId = setInterval(() => {
       if (userId) {
         let resp = getAgentChats(userId);
-        console.log("Interval API call:", resp);
       }
     }, 5000);
 
@@ -739,7 +778,7 @@ const App = () => {
             alt="Toggle Size"
             onClick={toggleSize}
           />
-          {talkButton && (
+          {talkButton && id !== undefined && (
             <TalkToHuman onClick={toggleFormVisibility}>
               Talk to Human
             </TalkToHuman>
@@ -889,6 +928,7 @@ const App = () => {
                     />
                   </div>
                   <button
+                  disabled={loading}
                     // onClick={handleSubmit}
                     type="submit"
                     style={{
@@ -936,9 +976,9 @@ const App = () => {
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && sendMessage()}
             placeholder="Skriv dit spørgsmål her..."
-            disabled={disabledTextField}
+            disabled={disabledTextField || id===undefined}
           />
-          {message && (
+          {message  && (
             <SendButton src={sendIcon} alt="Send" onClick={sendMessage} />
           )}
         </InputContainer>
