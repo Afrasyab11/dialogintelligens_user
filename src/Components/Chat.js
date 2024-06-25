@@ -376,7 +376,7 @@ const App = () => {
           }
         }
       }else{
-          toast.warning("Id is not defined")
+          toast.warning("Please provide Id in the route")
         }
       
     };
