@@ -375,7 +375,10 @@ const App = () => {
             setDisabledTextField(true);
           }
         }
-      }
+      }else{
+          toast.warning("Id is not defined")
+        }
+      
     };
 
     fetchAdminStatus();
